@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/dark_surface">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- API Key -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="API Key"
+            app:endIconMode="password_toggle"
+            app:hintTextColor="@color/purple_primary"
+            app:boxStrokeColor="@color/purple_primary"
+            app:endIconTint="@color/text_secondary">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etApiKey"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Model Selection -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Model"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="4dp" />
+
+        <Spinner
+            android:id="@+id/spinnerModel"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_input"
+            android:paddingHorizontal="12dp"
+            android:popupBackground="@color/dark_surface" />
+
+        <!-- Extended Thinking -->
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchThinking"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Extended Thinking"
+            android:textColor="@color/text_primary"
+            android:layout_marginTop="16dp"
+            app:thumbTint="@color/purple_primary"
+            app:trackTintMode="src_atop" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layoutBudget"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Thinking budget (tokens)"
+            android:visibility="gone"
+            android:layout_marginTop="8dp"
+            app:hintTextColor="@color/purple_primary"
+            app:boxStrokeColor="@color/purple_primary">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etBudgetTokens"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Web Search -->
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchSearch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Web Search"
+            android:textColor="@color/text_primary"
+            android:layout_marginTop="12dp"
+            app:thumbTint="@color/purple_primary"
+            app:trackTintMode="src_atop" />
+
+        <!-- Max Tokens -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Max output tokens"
+            android:layout_marginTop="16dp"
+            app:hintTextColor="@color/purple_primary"
+            app:boxStrokeColor="@color/purple_primary">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etMaxTokens"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- System Prompt -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="System prompt (optional)"
+            android:layout_marginTop="16dp"
+            app:hintTextColor="@color/purple_primary"
+            app:boxStrokeColor="@color/purple_primary">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etSystemPrompt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine"
+                android:minLines="2"
+                android:maxLines="5"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </LinearLayout>
+</ScrollView>

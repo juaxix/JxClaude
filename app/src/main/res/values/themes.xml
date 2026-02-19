@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.JxClaude" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">#BB86FC</item>
+        <item name="colorPrimaryVariant">#7C4DFF</item>
+        <item name="colorOnPrimary">#000000</item>
+        <item name="colorSecondary">#CF6679</item>
+        <item name="colorOnSecondary">#000000</item>
+        <item name="colorSurface">#1E1E2E</item>
+        <item name="colorOnSurface">#E0E0E0</item>
+        <item name="android:colorBackground">#121218</item>
+        <item name="colorOnBackground">#E0E0E0</item>
+        <item name="android:statusBarColor">#0D0D15</item>
+        <item name="android:navigationBarColor">#0D0D15</item>
+        <item name="android:windowBackground">@color/dark_bg</item>
+    </style>
+
+    <style name="Theme.JxClaude.Dialog" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
+        <item name="colorPrimary">#BB86FC</item>
+        <item name="colorSurface">#1E1E2E</item>
+        <item name="colorOnSurface">#E0E0E0</item>
+        <item name="android:background">#1E1E2E</item>
+        <item name="android:textColor">#E0E0E0</item>
+        <item name="android:textColorPrimary">#E0E0E0</item>
+        <item name="android:textColorSecondary">#A0A0B0</item>
+    </style>
+</resources>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="btnSend" type="id"/>
+    <item name="etMessage" type="id"/>
+    <item name="layoutInput" type="id"/>
+    <item name="progressBar" type="id"/>
+    <item name="toolbar" type="id"/>
+    <item name="recyclerChat" type="id"/>
+    <item name="tvEmptyState" type="id"/>
+    <item name="btnApiKey" type="id"/>
+    <item name="btnClear" type="id"/>
+</resources>
