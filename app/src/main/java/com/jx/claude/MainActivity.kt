@@ -109,7 +109,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun observeViewModel() {
         viewModel.messages.observe(this) { messages ->
-            chatAdapter.submitList(messages) {
+            chatAdapter.submitList(messages.toList()) {
                 if (messages.isNotEmpty()) {
                     binding.recyclerChat.scrollToPosition(messages.size - 1)
                 }
@@ -120,7 +120,6 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.isLoading.observe(this) { loading ->
             binding.progressBar.visibility = if (loading) View.VISIBLE else View.GONE
-            // Change send button to stop button
             binding.btnSend.setImageResource(
                 if (loading) android.R.drawable.ic_media_pause
                 else android.R.drawable.ic_menu_send

@@ -9,4 +9,7 @@
     <item name="tvEmptyState" type="id"/>
     <item name="btnApiKey" type="id"/>
     <item name="btnClear" type="id"/>
+    <item name="tvAttachIcon" type="id"/>
+    <item name="tvAttachName" type="id"/>
+    <item name="btnRemoveAttach" type="id"/>
 </resources>

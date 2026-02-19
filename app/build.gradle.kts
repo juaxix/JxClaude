@@ -52,6 +52,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.baselibrary)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -77,4 +78,18 @@ dependencies {
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    // beautify messages
+    implementation("io.noties.markwon:core:4.6.2") {
+        exclude(group = "org.jetbrains", module = "annotations-java5")
+    }
+    implementation("io.noties.markwon:ext-strikethrough:4.6.2") {
+        exclude(group = "org.jetbrains", module = "annotations-java5")
+    }
+    implementation("io.noties.markwon:ext-tables:4.6.2") {
+        exclude(group = "org.jetbrains", module = "annotations-java5")
+    }
+    implementation("io.noties.markwon:html:4.6.2") {
+        exclude(group = "org.jetbrains", module = "annotations-java5")
+    }
 }

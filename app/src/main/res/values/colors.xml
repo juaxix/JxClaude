@@ -3,19 +3,14 @@
     <color name="purple_primary">#BB86FC</color>
     <color name="purple_dark">#7C4DFF</color>
     <color name="purple_deep">#6C3FD1</color>
-    <color name="dark_bg">#121218</color>
     <color name="dark_surface">#1E1E2E</color>
     <color name="dark_surface_light">#2A2A3C</color>
     <color name="dark_toolbar">#1A1A28</color>
     <color name="dark_drawer">#161622</color>
     <color name="dark_input">#252535</color>
-    <color name="text_primary">#E8E8E8</color>
-    <color name="text_secondary">#A0A0B0</color>
     <color name="text_hint">#666680</color>
     <color name="user_bubble">#6C3FD1</color>
     <color name="bot_bubble">#2A2A3C</color>
-    <color name="thinking_bg">#1A1A30</color>
-    <color name="divider">#2A2A3C</color>
 
     <color name="Purple80">#FFD0BCFF</color>
     <color name="PurpleGrey80">#FFCCC2DC</color>
@@ -23,4 +18,17 @@
     <color name="Purple40">#FF6650a4</color>
     <color name="PurpleGrey40">#FF625b71</color>
     <color name="Pink40">#FF7D5260</color>
+
+    <color name="dark_bg">#0f0a1a</color>
+    <color name="toolbar_bg">#1a1230</color>
+    <color name="drawer_bg">#16102b</color>
+    <color name="input_bg">#2a2244</color>
+    <color name="user_msg_bg">#7C4DFF</color>
+    <color name="bot_msg_bg">#1e1636</color>
+    <color name="accent">#B388FF</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#9990BB</color>
+    <color name="thinking_bg">#252045</color>
+    <color name="chip_bg">#2a224e</color>
+    <color name="divider">#33FFFFFF</color>
 </resources>
