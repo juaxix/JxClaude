@@ -55,7 +55,7 @@ Lightweight API-KEY based Claude chat for Android using kotlin and your API key.
 
 1. **Clone the repo**
    ```bash
-   git clone https://github.com/yourusername/claude-chat-android.git
+   git clone git@github.com:juaxix/JxClaude.git
    ```
 
 2. **Open in Android Studio** and let Gradle do its thing ☕
