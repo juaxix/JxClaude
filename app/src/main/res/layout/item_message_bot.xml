@@ -49,14 +49,12 @@
                 android:textIsSelectable="true" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/tvMessage"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvMarkdown"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/text_primary"
-            android:textSize="15sp"
-            android:lineSpacingExtra="2dp"
-            android:textIsSelectable="true" />
+            android:nestedScrollingEnabled="false"
+            android:overScrollMode="never" />
 
         <TextView
             android:id="@+id/tvTimestamp"

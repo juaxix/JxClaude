@@ -3,53 +3,48 @@ package com.jx.claude.utils
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
+import android.text.method.LinkMovementMethod
+import android.widget.TextView
 import io.noties.markwon.AbstractMarkwonPlugin
 import io.noties.markwon.Markwon
 import io.noties.markwon.core.MarkwonTheme
-import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
-import io.noties.markwon.ext.tables.TablePlugin
-import io.noties.markwon.html.HtmlPlugin
 import io.noties.markwon.linkify.LinkifyPlugin
+import io.noties.markwon.syntax.Prism4jThemeDarkula
+import io.noties.markwon.syntax.SyntaxHighlightPlugin
+import io.noties.prism4j.Prism4j
 
 object MarkwonProvider {
 
     private var markwon: Markwon? = null
-
     fun get(context: Context): Markwon {
         if (markwon == null) {
-            markwon = Markwon.builder(context)
-                .usePlugin(StrikethroughPlugin.create())
-                .usePlugin(TablePlugin.create(context))
-                .usePlugin(HtmlPlugin.create())
+            // Prism4j handles language grammars
+            val prism4j = Prism4j(ClaudeGrammarLocator())
+            val prism4jTheme = Prism4jThemeDarkula.create()
+
+            markwon = Markwon.builder(context.applicationContext)
                 .usePlugin(LinkifyPlugin.create())
+                .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
                 .usePlugin(object : AbstractMarkwonPlugin() {
                     override fun configureTheme(builder: MarkwonTheme.Builder) {
                         builder
-                            .codeBackgroundColor(Color.parseColor("#252045"))
-                            .codeTextColor(Color.parseColor("#E0D0FF"))
-                            .codeTextSize(dpToPx(context, 13))
-                            .codeTypeface(Typeface.MONOSPACE)
-                            .codeBlockMargin(dpToPx(context, 8))
-                            .blockQuoteColor(Color.parseColor("#7C4DFF"))
-                            .blockQuoteWidth(dpToPx(context, 3))
-                            .blockMargin(dpToPx(context, 12))
-                            .headingBreakHeight(0)
-                            .headingTextSizeMultipliers(
-                                floatArrayOf(1.5f, 1.3f, 1.17f, 1.1f, 1.0f, 0.9f)
+                            .codeBlockBackgroundColor(Color.parseColor("#2B2B2B"))
+                            .codeBlockTypeface(Typeface.MONOSPACE)
+                            .codeBlockTextSize(
+                                (context.resources.displayMetrics.scaledDensity * 13).toInt()
                             )
-                            .bulletListItemStrokeWidth(dpToPx(context, 1))
-                            .listItemColor(Color.parseColor("#B388FF"))
-                            .thematicBreakColor(Color.parseColor("#44B388FF"))
-                            .thematicBreakHeight(dpToPx(context, 1))
-                            .linkColor(Color.parseColor("#B388FF"))
+                            .codeBackgroundColor(Color.parseColor("#2B2B2B"))
+                            .codeTextColor(Color.parseColor("#A9B7C6"))
+                            .codeTypeface(Typeface.MONOSPACE)
+                    }
+
+                    // Makes links tappable in all TextViews rendered by Markwon
+                    override fun afterSetText(textView: TextView) {
+                        textView.movementMethod = LinkMovementMethod.getInstance()
                     }
                 })
                 .build()
         }
         return markwon!!
-    }
-
-    private fun dpToPx(context: Context, dp: Int): Int {
-        return (dp * context.resources.displayMetrics.density).toInt()
     }
 }

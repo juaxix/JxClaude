@@ -11,11 +11,14 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.jx.claude.R
 import com.jx.claude.models.ChatMessage
 import com.jx.claude.utils.MarkwonProvider
+import io.noties.markwon.recycler.MarkwonAdapter
+import org.commonmark.node.FencedCodeBlock
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -74,23 +77,19 @@ class ChatAdapter : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(DIFF) {
                     copyToClipboard(it.context, message.content)
                 }
             }
-            is BotViewHolder -> {
-                // Enable tappable links
-                holder.tvMessage.movementMethod =
-                    android.text.method.LinkMovementMethod.getInstance()
 
-                // Render markdown for bot messages
+            is BotViewHolder -> {
+                // Render markdown into the inner RecyclerView
+                val markwon = MarkwonProvider.get(holder.itemView.context)
                 if (message.content.isNotBlank()) {
-                    MarkwonProvider.get(holder.itemView.context)
-                        .setMarkdown(holder.tvMessage, message.content)
-                } else {
-                    holder.tvMessage.text = ""
+                    holder.markwonAdapter.setMarkdown(markwon, message.content)
+                    holder.markwonAdapter.notifyDataSetChanged()
                 }
 
                 holder.tvTimestamp.text = formatTimestamp(message.timestamp)
 
+                // Copy entire raw message
                 holder.btnCopy.setOnClickListener {
-                    // Copy the raw markdown content, not the rendered spans
                     copyToClipboard(it.context, message.content)
                 }
 
@@ -99,7 +98,6 @@ class ChatAdapter : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(DIFF) {
                     holder.thinkingSection.visibility = View.VISIBLE
                     holder.tvThinkingContent.text = message.thinkingContent
 
-                    // Reset state on rebind
                     holder.tvThinkingContent.visibility = View.GONE
                     holder.tvThinkingToggle.text = "🧠 Thinking  ▶"
 
@@ -129,6 +127,8 @@ class ChatAdapter : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(DIFF) {
         return sdf.format(Date(timestamp))
     }
 
+    // ── ViewHolders ──────────────────────────────────────────────────
+
     class UserViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvMessage: TextView = view.findViewById(R.id.tvMessage)
         val tvTimestamp: TextView = view.findViewById(R.id.tvTimestamp)
@@ -136,11 +136,22 @@ class ChatAdapter : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(DIFF) {
     }
 
     class BotViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val tvMessage: TextView = view.findViewById(R.id.tvMessage)
+        val rvMarkdown: RecyclerView = view.findViewById(R.id.rvMarkdown)
         val tvTimestamp: TextView = view.findViewById(R.id.tvTimestamp)
         val btnCopy: ImageButton = view.findViewById(R.id.btnCopy)
         val thinkingSection: LinearLayout = view.findViewById(R.id.thinkingSection)
         val tvThinkingToggle: TextView = view.findViewById(R.id.tvThinkingToggle)
         val tvThinkingContent: TextView = view.findViewById(R.id.tvThinkingContent)
+
+        // Each bot message gets its own MarkwonAdapter
+        val markwonAdapter: MarkwonAdapter =
+            MarkwonAdapter.builderTextViewIsRoot(R.layout.item_default_text)
+                .include(FencedCodeBlock::class.java, CodeBlockEntry())
+                .build()
+
+        init {
+            rvMarkdown.layoutManager = LinearLayoutManager(view.context)
+            rvMarkdown.adapter = markwonAdapter
+        }
     }
 }

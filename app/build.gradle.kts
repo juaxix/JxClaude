@@ -1,6 +1,8 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("kotlin-kapt")
+
     alias(libs.plugins.kotlin.compose)
 }
 
@@ -96,5 +98,15 @@ dependencies {
         exclude(group = "org.jetbrains", module = "annotations-java5")
     }
 
+    implementation("io.noties.markwon:syntax-highlight:4.6.2"){
+        exclude(group = "org.jetbrains", module = "annotations-java5")
+    }
+    implementation("io.noties:prism4j:2.0.0"){
+        exclude(group = "org.jetbrains", module = "annotations-java5")
+    }
+    implementation("io.noties.markwon:recycler:4.6.2"){
+        exclude(group = "org.jetbrains", module = "annotations-java5")
+    }
 
+    kapt("io.noties:prism4j-bundler:2.0.0")
 }
