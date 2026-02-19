@@ -3,6 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/drawerLayout"
+    android:fitsSystemWindows="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/dark_bg">
@@ -19,14 +20,14 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="60dp"
+            android:minHeight="32dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingHorizontal="4dp"
-            android:paddingTop="23dp"
-            android:paddingBottom="4dp"
+            android:paddingHorizontal="3dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
             android:background="@color/toolbar_bg"
-            android:elevation="4dp">
+            android:elevation="3dp">
 
             <ImageButton
                 android:id="@+id/btnMenu"
