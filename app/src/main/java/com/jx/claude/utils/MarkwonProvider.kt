@@ -9,6 +9,7 @@ import io.noties.markwon.core.MarkwonTheme
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.ext.tables.TablePlugin
 import io.noties.markwon.html.HtmlPlugin
+import io.noties.markwon.linkify.LinkifyPlugin
 
 object MarkwonProvider {
 
@@ -20,6 +21,7 @@ object MarkwonProvider {
                 .usePlugin(StrikethroughPlugin.create())
                 .usePlugin(TablePlugin.create(context))
                 .usePlugin(HtmlPlugin.create())
+                .usePlugin(LinkifyPlugin.create())
                 .usePlugin(object : AbstractMarkwonPlugin() {
                     override fun configureTheme(builder: MarkwonTheme.Builder) {
                         builder

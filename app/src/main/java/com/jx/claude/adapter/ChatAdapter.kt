@@ -1,10 +1,15 @@
 package com.jx.claude.adapter
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -64,9 +69,15 @@ class ChatAdapter : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(DIFF) {
                 }
 
                 holder.tvTimestamp.text = formatTimestamp(message.timestamp)
+
+                holder.btnCopy.setOnClickListener {
+                    copyToClipboard(it.context, message.content)
+                }
             }
             is BotViewHolder -> {
-                holder.tvMessage.movementMethod = android.text.method.LinkMovementMethod.getInstance()
+                // Enable tappable links
+                holder.tvMessage.movementMethod =
+                    android.text.method.LinkMovementMethod.getInstance()
 
                 // Render markdown for bot messages
                 if (message.content.isNotBlank()) {
@@ -77,6 +88,11 @@ class ChatAdapter : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(DIFF) {
                 }
 
                 holder.tvTimestamp.text = formatTimestamp(message.timestamp)
+
+                holder.btnCopy.setOnClickListener {
+                    // Copy the raw markdown content, not the rendered spans
+                    copyToClipboard(it.context, message.content)
+                }
 
                 // Thinking section
                 if (!message.thinkingContent.isNullOrBlank()) {
@@ -101,6 +117,13 @@ class ChatAdapter : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(DIFF) {
         }
     }
 
+    private fun copyToClipboard(context: Context, text: String) {
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("message", text)
+        clipboard.setPrimaryClip(clip)
+        Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+    }
+
     private fun formatTimestamp(timestamp: Long): String {
         val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
         return sdf.format(Date(timestamp))
@@ -109,11 +132,13 @@ class ChatAdapter : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(DIFF) {
     class UserViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvMessage: TextView = view.findViewById(R.id.tvMessage)
         val tvTimestamp: TextView = view.findViewById(R.id.tvTimestamp)
+        val btnCopy: ImageButton = view.findViewById(R.id.btnCopy)
     }
 
     class BotViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvMessage: TextView = view.findViewById(R.id.tvMessage)
         val tvTimestamp: TextView = view.findViewById(R.id.tvTimestamp)
+        val btnCopy: ImageButton = view.findViewById(R.id.btnCopy)
         val thinkingSection: LinearLayout = view.findViewById(R.id.thinkingSection)
         val tvThinkingToggle: TextView = view.findViewById(R.id.tvThinkingToggle)
         val tvThinkingContent: TextView = view.findViewById(R.id.tvThinkingContent)

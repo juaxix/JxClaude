@@ -41,5 +41,15 @@
             android:textColor="#BBFFFFFF"
             android:textSize="11sp"
             android:layout_marginTop="4dp" />
+
+        <ImageButton
+            android:id="@+id/btnCopy"
+            android:layout_width="23dp"
+            android:layout_height="23dp"
+            android:layout_marginStart="8dp"
+            android:padding="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_input_get"
+            android:contentDescription="Copy message" />
     </LinearLayout>
 </LinearLayout>
