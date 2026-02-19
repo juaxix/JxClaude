@@ -254,6 +254,7 @@ class MainActivity : AppCompatActivity() {
         val etSystemPrompt = dialogView.findViewById<TextInputEditText>(R.id.etSystemPrompt)
         val tvThinkingWarning = dialogView.findViewById<TextView>(R.id.tvThinkingWarning)
         val tvSearchWarning = dialogView.findViewById<TextView>(R.id.tvSearchWarning)
+        val etTemperature = dialogView.findViewById<TextInputEditText>(R.id.etTemperature)
 
         val prefs = viewModel.prefs
 
@@ -261,6 +262,7 @@ class MainActivity : AppCompatActivity() {
         etBudgetTokens.setText(prefs.thinkingBudget.toString())
         etMaxTokens.setText(prefs.maxTokens.toString())
         etSystemPrompt.setText(prefs.systemPrompt)
+        etTemperature.setText(prefs.temperature.toString())
         switchThinking.isChecked = prefs.thinkingEnabled
         switchSearch.isChecked = prefs.searchEnabled
         layoutBudget.visibility = if (prefs.thinkingEnabled) View.VISIBLE else View.GONE
@@ -310,7 +312,7 @@ class MainActivity : AppCompatActivity() {
                 prefs.searchEnabled = switchSearch.isChecked
                 prefs.maxTokens = etMaxTokens.text.toString().toIntOrNull() ?: 4096
                 prefs.systemPrompt = etSystemPrompt.text.toString()
-
+                prefs.temperature = etTemperature.text.toString().toFloatOrNull()?.coerceIn(0f, 1f) ?: 1.0f
                 val selectedPosition = spinnerModel.selectedItemPosition
                 val models = viewModel.availableModels.value ?: emptyList()
                 if (selectedPosition in models.indices) {

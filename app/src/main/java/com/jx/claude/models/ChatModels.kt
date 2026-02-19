@@ -35,7 +35,8 @@ data class AnthropicRequest(
     val stream: Boolean = false,
     val system: String? = null,
     val thinking: ThinkingConfig? = null,
-    val tools: List<Tool>? = null
+    val tools: List<Tool>? = null,
+    val temperature: Double? = null
 )
 
 data class ThinkingConfig(

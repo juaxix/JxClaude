@@ -234,7 +234,8 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
             messages = apiMessages,
             system = systemPrompt,
             thinking = thinking,
-            tools = tools
+            tools = tools,
+            temperature = if (thinking != null) null else prefs.temperature.toDouble()
         )
 
         // Create a placeholder bot message for streaming

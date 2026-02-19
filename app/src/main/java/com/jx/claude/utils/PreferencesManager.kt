@@ -55,6 +55,12 @@ class PreferencesManager(context: Context) {
             prefs.edit().putString("system_prompt", value).apply()
         }
 
+    var temperature: Float
+        get() = prefs.getFloat("temperature", 1.0f)
+        set(value) {
+            prefs.edit().putFloat("temperature", value).apply()
+        }
+
     fun saveChatSessions(sessions: List<ChatSession>) {
         prefs.edit().putString("chat_sessions", gson.toJson(sessions)).apply()
     }
