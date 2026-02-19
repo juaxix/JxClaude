@@ -54,10 +54,20 @@ class ChatAdapter : ListAdapter<ChatMessage, RecyclerView.ViewHolder>(DIFF) {
 
         when (holder) {
             is UserViewHolder -> {
-                holder.tvMessage.text = message.content
+                val prefix = message.attachmentNames
+                    ?.joinToString("\n") { "📎 $it" }
+
+                if (prefix != null) {
+                    holder.tvMessage.text = "$prefix\n\n${message.content}"
+                } else {
+                    holder.tvMessage.text = message.content
+                }
+
                 holder.tvTimestamp.text = formatTimestamp(message.timestamp)
             }
             is BotViewHolder -> {
+                holder.tvMessage.movementMethod = android.text.method.LinkMovementMethod.getInstance()
+
                 // Render markdown for bot messages
                 if (message.content.isNotBlank()) {
                     MarkwonProvider.get(holder.itemView.context)

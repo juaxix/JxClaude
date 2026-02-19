@@ -1,23 +1,30 @@
 package com.jx.claude
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
+import android.provider.OpenableColumns
+import android.util.Base64
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.textfield.TextInputEditText
 import com.jx.claude.adapter.ChatAdapter
 import com.jx.claude.adapter.ChatListAdapter
 import com.jx.claude.databinding.ActivityMainBinding
+import com.jx.claude.models.Attachment
 import com.jx.claude.models.ModelInfo
 import com.jx.claude.viewmodel.ChatViewModel
+import java.io.ByteArrayOutputStream
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,6 +32,12 @@ class MainActivity : AppCompatActivity() {
     private val viewModel: ChatViewModel by viewModels()
     private lateinit var chatAdapter: ChatAdapter
     private lateinit var chatListAdapter: ChatListAdapter
+
+    private val pickImageLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let { handlePickedImage(it) }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
@@ -89,6 +102,14 @@ class MainActivity : AppCompatActivity() {
             showSettingsDialog()
         }
 
+        binding.btnAttach.setOnClickListener {
+            pickImageLauncher.launch("image/*")
+        }
+
+        binding.btnRemoveAttachment.setOnClickListener {
+            viewModel.clearAttachments()
+        }
+
         binding.btnSend.setOnClickListener {
             if (viewModel.isLoading.value == true) {
                 viewModel.stopStreaming()
@@ -114,6 +135,62 @@ class MainActivity : AppCompatActivity() {
             super.onBackPressed()
         }
     }
+
+    // ── Image handling ──────────────────────────────────────────
+
+    private fun handlePickedImage(uri: Uri) {
+        try {
+            val mimeType = contentResolver.getType(uri) ?: "image/jpeg"
+            val inputStream = contentResolver.openInputStream(uri) ?: return
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            inputStream.close()
+
+            if (bitmap == null) {
+                Toast.makeText(this, "Could not decode image", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            // Resize if too large (max 1568px on longest side, Anthropic recommended)
+            val maxDim = 1568
+            val scaled = if (bitmap.width > maxDim || bitmap.height > maxDim) {
+                val scale = maxDim.toFloat() / maxOf(bitmap.width, bitmap.height)
+                Bitmap.createScaledBitmap(
+                    bitmap,
+                    (bitmap.width * scale).toInt(),
+                    (bitmap.height * scale).toInt(),
+                    true
+                )
+            } else {
+                bitmap
+            }
+
+            val outputStream = ByteArrayOutputStream()
+            val format = if (mimeType == "image/png") Bitmap.CompressFormat.PNG
+            else Bitmap.CompressFormat.JPEG
+            scaled.compress(format, 85, outputStream)
+
+            val base64 = Base64.encodeToString(outputStream.toByteArray(), Base64.NO_WRAP)
+            val finalMime = if (mimeType == "image/png") "image/png" else "image/jpeg"
+            val fileName = getFileName(uri)
+
+            viewModel.addAttachment(Attachment(finalMime, base64, fileName))
+        } catch (e: Exception) {
+            Toast.makeText(this, "Failed to load image: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun getFileName(uri: Uri): String? {
+        var name: String? = null
+        contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            val idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (cursor.moveToFirst() && idx >= 0) {
+                name = cursor.getString(idx)
+            }
+        }
+        return name
+    }
+
+    // ── Observe ─────────────────────────────────────────────────
 
     private fun observeViewModel() {
         viewModel.messages.observe(this) { messages ->
@@ -148,7 +225,19 @@ class MainActivity : AppCompatActivity() {
         viewModel.chatSessions.observe(this) { sessions ->
             chatListAdapter.submitList(sessions.toList())
         }
+
+        viewModel.pendingAttachments.observe(this) { attachments ->
+            if (attachments.isNullOrEmpty()) {
+                binding.attachmentPreview.visibility = View.GONE
+            } else {
+                binding.attachmentPreview.visibility = View.VISIBLE
+                binding.tvAttachmentInfo.text =
+                    attachments.joinToString(", ") { "📎 ${it.fileName ?: "image"}" }
+            }
+        }
     }
+
+    // ── Settings dialog ─────────────────────────────────────────
 
     private fun showSettingsDialog() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_settings, null)
@@ -163,7 +252,6 @@ class MainActivity : AppCompatActivity() {
 
         val prefs = viewModel.prefs
 
-        // Populate current values
         etApiKey.setText(prefs.apiKey)
         etBudgetTokens.setText(prefs.thinkingBudget.toString())
         etMaxTokens.setText(prefs.maxTokens.toString())
@@ -176,7 +264,6 @@ class MainActivity : AppCompatActivity() {
             layoutBudget.visibility = if (checked) View.VISIBLE else View.GONE
         }
 
-        // Setup model spinner
         setupModelSpinner(spinnerModel, prefs.selectedModel)
 
         val dialog = AlertDialog.Builder(this, R.style.Theme_JxClaude_Dialog)
@@ -226,7 +313,6 @@ class MainActivity : AppCompatActivity() {
             spinner.setSelection(currentIndex)
         }
 
-        // Also observe for async model loading
         viewModel.availableModels.observe(this) { updatedModels ->
             val names = updatedModels.map { it.displayName ?: it.id }
             val newAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, names)

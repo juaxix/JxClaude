@@ -17,7 +17,8 @@ data class ChatMessage(
     val content: String,
     val isUser: Boolean,
     val thinkingContent: String? = null,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val attachmentNames: List<String>? = null  // display only, base64 not persisted
 )
 
 // ── Anthropic API Request ──
@@ -44,7 +45,7 @@ data class Tool(
 
 data class ApiMessage(
     val role: String,
-    val content: String
+    val content: Any // String for text-only, List<ContentBlock> for multimodal
 )
 
 // ── Anthropic API Response ──
@@ -57,11 +58,6 @@ data class AnthropicResponse(
     @SerializedName("stop_reason") val stopReason: String? = null,
     val usage: Usage? = null,
     val error: ErrorBody? = null
-)
-
-data class ContentBlock(
-    val type: String? = null,
-    val text: String? = null
 )
 
 data class Usage(
