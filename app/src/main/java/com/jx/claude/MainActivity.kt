@@ -7,8 +7,10 @@ import android.os.Bundle
 import android.provider.OpenableColumns
 import android.util.Base64
 import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -23,6 +25,7 @@ import com.jx.claude.adapter.ChatListAdapter
 import com.jx.claude.databinding.ActivityMainBinding
 import com.jx.claude.models.Attachment
 import com.jx.claude.models.ModelInfo
+import com.jx.claude.utils.ModelCapabilityHelper
 import com.jx.claude.viewmodel.ChatViewModel
 import java.io.ByteArrayOutputStream
 
@@ -151,7 +154,6 @@ class MainActivity : AppCompatActivity() {
                 return
             }
 
-            // Resize if too large (max 1568px on longest side, Anthropic recommended)
             val maxDim = 1568
             val scaled = if (bitmap.width > maxDim || bitmap.height > maxDim) {
                 val scale = maxDim.toFloat() / maxOf(bitmap.width, bitmap.height)
@@ -250,6 +252,8 @@ class MainActivity : AppCompatActivity() {
         val switchSearch = dialogView.findViewById<SwitchMaterial>(R.id.switchSearch)
         val etMaxTokens = dialogView.findViewById<TextInputEditText>(R.id.etMaxTokens)
         val etSystemPrompt = dialogView.findViewById<TextInputEditText>(R.id.etSystemPrompt)
+        val tvThinkingWarning = dialogView.findViewById<TextView>(R.id.tvThinkingWarning)
+        val tvSearchWarning = dialogView.findViewById<TextView>(R.id.tvSearchWarning)
 
         val prefs = viewModel.prefs
 
@@ -266,6 +270,31 @@ class MainActivity : AppCompatActivity() {
         }
 
         setupModelSpinner(spinnerModel, prefs.selectedModel)
+
+        // ── Update capability warnings when model changes ───────
+        fun updateCapabilityWarnings(modelId: String) {
+            val caps = ModelCapabilityHelper.getCapabilities(modelId)
+            tvThinkingWarning.visibility =
+                if (caps.supportsThinking) View.GONE else View.VISIBLE
+            tvSearchWarning.visibility =
+                if (caps.supportsSearch) View.GONE else View.VISIBLE
+        }
+
+        // Show initial warnings for current model
+        updateCapabilityWarnings(prefs.selectedModel)
+
+        spinnerModel.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?, view: View?, position: Int, id: Long
+            ) {
+                val models = viewModel.availableModels.value ?: return
+                if (position in models.indices) {
+                    updateCapabilityWarnings(models[position].id)
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
 
         val dialog = AlertDialog.Builder(this, R.style.Theme_JxClaude_Dialog)
             .setTitle("⚙️  Settings")

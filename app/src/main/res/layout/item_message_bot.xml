@@ -64,6 +64,16 @@
             android:textSize="11sp"
             android:layout_marginTop="4dp" />
 
+        <!-- Token / speed / cost info -->
+        <TextView
+            android:id="@+id/tvTokenInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#80B388FF"
+            android:textSize="11sp"
+            android:layout_marginTop="2dp"
+            android:visibility="gone" />
+
         <ImageButton
             android:id="@+id/btnCopy"
             android:layout_width="23dp"

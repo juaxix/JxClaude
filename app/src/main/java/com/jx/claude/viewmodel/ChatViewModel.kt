@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.jx.claude.api.RetrofitClient
 import com.jx.claude.api.StreamingClient
 import com.jx.claude.models.*
+import com.jx.claude.utils.ModelCapabilityHelper
 import com.jx.claude.utils.PreferencesManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.catch
@@ -112,6 +113,11 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /** Returns capabilities for a given model id */
+    fun getModelCapabilities(modelId: String): ModelCapabilityHelper.Capabilities {
+        return ModelCapabilityHelper.getCapabilities(modelId)
+    }
+
     // ── Attachment management ───────────────────────────────────
 
     fun addAttachment(attachment: Attachment) {
@@ -130,6 +136,16 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     fun clearAttachments() {
         _pendingAttachments.value = emptyList()
+    }
+
+    // ── Error bubble helper ────────────────────────────────────
+
+    private fun addErrorMessage(session: ChatSession, errorText: String) {
+        session.messages.add(
+            ChatMessage(content = errorText, isUser = false, isError = true)
+        )
+        _messages.value = session.messages.toList()
+        saveSessions()
     }
 
     // ── Send message ────────────────────────────────────────────
@@ -166,9 +182,9 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
             saveSessions()
         }
 
-        // Build API messages (text only for history)
+        // Build API messages — skip error bubbles
         val apiMessages = session.messages
-            .filter { it.content.isNotBlank() }
+            .filter { it.content.isNotBlank() && !it.isError }
             .map { msg ->
                 ApiMessage(
                     role = if (msg.isUser) "user" else "assistant",
@@ -198,13 +214,16 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
             apiMessages[lastIdx] = ApiMessage(role = lastMsg.role, content = blocks)
         }
 
-        val thinking = if (prefs.thinkingEnabled)
+        // ── Respect model capabilities ──────────────────────────
+        val caps = ModelCapabilityHelper.getCapabilities(prefs.selectedModel)
+
+        val thinking = if (prefs.thinkingEnabled && caps.supportsThinking)
             ThinkingConfig(budgetTokens = prefs.thinkingBudget) else null
 
-        val tools = if (prefs.searchEnabled)
+        val tools = if (prefs.searchEnabled && caps.supportsSearch)
             listOf(Tool(type = "web_search_20250305", name = "web_search", maxUses = 5)) else null
 
-        val maxTokens = if (prefs.thinkingEnabled)
+        val maxTokens = if (thinking != null)
             maxOf(prefs.maxTokens, prefs.thinkingBudget + 1000) else prefs.maxTokens
 
         val systemPrompt = prefs.systemPrompt.ifBlank { null }
@@ -229,56 +248,120 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         val textBuilder = StringBuilder()
         val thinkingBuilder = StringBuilder()
 
+        // ── Streaming metrics ───────────────────────────────────
+        var inputTokenCount = 0
+        var outputTokenCount = 0
+        var textDeltaCount = 0
+        var firstTextDeltaMs = 0L
+        val selectedModel = prefs.selectedModel
+
         streamClient = StreamingClient(apiKey)
         streamJob = viewModelScope.launch {
             try {
                 streamClient!!.streamMessage(request)
                     .catch { e ->
-                        _error.value = e.message ?: "Stream error"
+                        // Remove empty placeholder
+                        if (textBuilder.isEmpty()) {
+                            session.messages.removeAll { it.id == botMsgId }
+                        }
+                        addErrorMessage(session, e.message ?: "Stream error")
                         _isLoading.value = false
                     }
                     .collect { event ->
                         when (event.type) {
+
+                            "message_start" -> {
+                                inputTokenCount =
+                                    event.message?.usage?.inputTokens ?: 0
+                            }
+
                             "content_block_start" -> {
                                 // Nothing special needed
                             }
+
                             "content_block_delta" -> {
                                 val delta = event.delta ?: return@collect
                                 when (delta.type) {
                                     "thinking_delta" -> {
                                         delta.thinking?.let { thinkingBuilder.append(it) }
                                     }
+
                                     "text_delta" -> {
                                         delta.text?.let { textBuilder.append(it) }
+                                        textDeltaCount++
+                                        if (firstTextDeltaMs == 0L)
+                                            firstTextDeltaMs = System.currentTimeMillis()
+
+                                        val elapsed =
+                                            (System.currentTimeMillis() - firstTextDeltaMs) / 1000f
+                                        val liveTps =
+                                            if (elapsed > 0.3f) textDeltaCount / elapsed else null
+
                                         updateBotMessage(
                                             session, botMsgId, botMsgTimestamp,
                                             textBuilder.toString(),
-                                            thinkingBuilder.toString().ifBlank { null }
+                                            thinkingBuilder.toString().ifBlank { null },
+                                            inputTokens = inputTokenCount.takeIf { it > 0 },
+                                            tokensPerSecond = liveTps
                                         )
                                     }
                                 }
                             }
+
+                            "message_delta" -> {
+                                outputTokenCount =
+                                    event.usage?.outputTokens ?: textDeltaCount
+                            }
+
                             "message_stop" -> {
+                                val elapsed = if (firstTextDeltaMs > 0)
+                                    (System.currentTimeMillis() - firstTextDeltaMs) / 1000f
+                                else 0f
+
+                                val finalTps =
+                                    if (elapsed > 0 && outputTokenCount > 0)
+                                        outputTokenCount / elapsed else null
+
+                                val cost = ModelCapabilityHelper.estimateCost(
+                                    selectedModel, inputTokenCount, outputTokenCount
+                                )
+
                                 updateBotMessage(
                                     session, botMsgId, botMsgTimestamp,
                                     textBuilder.toString().ifBlank { "(empty response)" },
-                                    thinkingBuilder.toString().ifBlank { null }
+                                    thinkingBuilder.toString().ifBlank { null },
+                                    inputTokens = inputTokenCount.takeIf { it > 0 },
+                                    outputTokens = outputTokenCount.takeIf { it > 0 },
+                                    tokensPerSecond = finalTps,
+                                    estimatedCost = cost.takeIf { it > 0 }
                                 )
                                 _isLoading.value = false
                                 saveSessions()
                             }
+
                             "error" -> {
-                                _error.value = "Stream error"
+                                if (textBuilder.isEmpty()) {
+                                    session.messages.removeAll { it.id == botMsgId }
+                                }
+                                addErrorMessage(session, "API stream error")
                                 _isLoading.value = false
                             }
                         }
                     }
             } catch (e: Exception) {
                 if (textBuilder.isNotEmpty()) {
+                    val elapsed = if (firstTextDeltaMs > 0)
+                        (System.currentTimeMillis() - firstTextDeltaMs) / 1000f else 0f
+                    val partialTps =
+                        if (elapsed > 0) textDeltaCount / elapsed else null
+
                     updateBotMessage(
                         session, botMsgId, botMsgTimestamp,
                         textBuilder.toString(),
-                        thinkingBuilder.toString().ifBlank { null }
+                        thinkingBuilder.toString().ifBlank { null },
+                        inputTokens = inputTokenCount.takeIf { it > 0 },
+                        outputTokens = textDeltaCount.takeIf { it > 0 },
+                        tokensPerSecond = partialTps
                     )
                     saveSessions()
                 } else {
@@ -286,7 +369,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                     _messages.value = session.messages.toList()
                 }
                 if (e !is kotlinx.coroutines.CancellationException) {
-                    _error.value = "Error: ${e.localizedMessage}"
+                    addErrorMessage(session, "Error: ${e.localizedMessage}")
                 }
                 _isLoading.value = false
             }
@@ -298,7 +381,11 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         msgId: String,
         timestamp: Long,
         text: String,
-        thinking: String?
+        thinking: String?,
+        inputTokens: Int? = null,
+        outputTokens: Int? = null,
+        tokensPerSecond: Float? = null,
+        estimatedCost: Double? = null
     ) {
         val index = session.messages.indexOfFirst { it.id == msgId }
         if (index >= 0) {
@@ -307,7 +394,11 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                 content = text,
                 isUser = false,
                 thinkingContent = thinking,
-                timestamp = timestamp
+                timestamp = timestamp,
+                inputTokens = inputTokens,
+                outputTokens = outputTokens,
+                tokensPerSecond = tokensPerSecond,
+                estimatedCost = estimatedCost
             )
             _messages.value = session.messages.toList()
         }

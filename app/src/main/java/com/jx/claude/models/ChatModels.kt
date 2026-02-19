@@ -16,9 +16,15 @@ data class ChatMessage(
     val id: String = UUID.randomUUID().toString(),
     val content: String,
     val isUser: Boolean,
+    val isError: Boolean = false,
     val thinkingContent: String? = null,
     val timestamp: Long = System.currentTimeMillis(),
-    val attachmentNames: List<String>? = null  // display only, base64 not persisted
+    val attachmentNames: List<String>? = null,
+    // Token / performance metrics
+    val inputTokens: Int? = null,
+    val outputTokens: Int? = null,
+    val tokensPerSecond: Float? = null,
+    val estimatedCost: Double? = null
 )
 
 // ── Anthropic API Request ──

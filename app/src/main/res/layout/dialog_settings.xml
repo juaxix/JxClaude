@@ -51,6 +51,17 @@
             android:textColor="@color/text_primary"
             android:layout_marginTop="16dp" />
 
+        <TextView
+            android:id="@+id/tvThinkingWarning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="⚠ Selected model does not support extended thinking"
+            android:textColor="#FF9800"
+            android:textSize="12sp"
+            android:paddingStart="4dp"
+            android:layout_marginTop="2dp"
+            android:visibility="gone" />
+
         <LinearLayout
             android:id="@+id/layoutBudget"
             android:layout_width="match_parent"
@@ -83,6 +94,17 @@
             android:text="Web Search"
             android:textColor="@color/text_primary"
             android:layout_marginTop="12dp" />
+
+        <TextView
+            android:id="@+id/tvSearchWarning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="⚠ Selected model does not support web search"
+            android:textColor="#FF9800"
+            android:textSize="12sp"
+            android:paddingStart="4dp"
+            android:layout_marginTop="2dp"
+            android:visibility="gone" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
