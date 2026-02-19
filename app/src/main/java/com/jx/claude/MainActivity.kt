@@ -107,6 +107,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onBackPressed() {
+        if (binding.drawerLayout.isDrawerOpen(binding.drawerContent)) {
+            binding.drawerLayout.closeDrawers()
+        } else {
+            super.onBackPressed()
+        }
+    }
+
     private fun observeViewModel() {
         viewModel.messages.observe(this) { messages ->
             chatAdapter.submitList(messages.toList()) {

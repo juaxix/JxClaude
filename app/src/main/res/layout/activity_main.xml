@@ -23,15 +23,15 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:paddingHorizontal="4dp"
-            android:paddingTop="4dp"
+            android:paddingTop="23dp"
             android:paddingBottom="4dp"
             android:background="@color/toolbar_bg"
             android:elevation="4dp">
 
             <ImageButton
                 android:id="@+id/btnMenu"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_menu"
                 android:contentDescription="Menu"
@@ -53,8 +53,8 @@
 
             <ImageButton
                 android:id="@+id/btnSettings"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_settings"
                 android:contentDescription="Settings"
