@@ -8,7 +8,6 @@ Lightweight API-KEY based Claude chat for Android using kotlin and your API key.
 ### A sleek, native Android client for the Anthropic Claude API
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
-[![API](https://img.shields.io/badge/API-24%2B-brightgreen)](https://android-arsenal.com/api?level=24)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Anthropic](https://img.shields.io/badge/Powered%20by-Claude-d4a574)](https://anthropic.com)
 
